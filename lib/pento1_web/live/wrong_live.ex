@@ -7,7 +7,8 @@ defmodule Pento1Web.WrongLive do
     {
       :ok,
       assign(
-        socket, score: 0,
+        socket, 
+        score: 0,
         correction: get_target(),
         result: "0",
         message: "make a guess:",

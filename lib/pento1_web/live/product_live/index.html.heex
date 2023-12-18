@@ -1,6 +1,9 @@
 
 <.header> 
-  Listing Products
+  <%!-- header component 안쪽 & actions slot tag 밖에 존재하는 content 는 @inner_block slot 에 속함 --%>
+  Listing Products 
+
+  <%!-- actions slot 내부에서 다른 component (ex. link, button) 을 구현 --%>
   <:actions>
     <.link patch={~p"/products/new"}>
       <.button>New Product</.button>
