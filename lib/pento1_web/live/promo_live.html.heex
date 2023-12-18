@@ -1,0 +1,44 @@
+<.header>
+  Send your Promo Code to a Friend
+  <:subtitle>promo code for 10% off their first game purchase!</:subtitle>
+</.header>
+
+
+<div>
+  <.simple_form
+    :let = {f}
+    for={@form}
+    id="promo-form"
+    phx-change="validate"  
+    phx-submit="save"     
+  >
+<%!-- 
+    phx-change="validate"  
+    phx-submit="save"     
+    해당 attribute 는 "binding" 으로 LiveView 를JS event 와 연결
+ --%>
+
+    <.input field={f[:frist_anme]} type="text" label="First Name"/>
+    <.input field={@form[:email]} type="email" label="Email" phx-debounce="blur"/>
+    <%!-- 
+    .input tag 내부 정의를 살펴 보면 
+    
+    def input(assigns) do
+      ~H"""
+        ...
+          <.label for={@id}><%= @label % %>></.label>
+          <input type={@type} name={@name} .../>
+          <.error :for={msg <- @errors}><%= msg %>></.error>
+        ...
+      """    
+    end
+
+    와 같이 3개의 tag 의 조합으로 구성되어 있음을 알 수 있다. 
+    따라서 해당 tag 에 대한 attribute 구현이 필요하다. (error 같은 경우는 default 값이 있는듯.)
+    --%>
+
+    <:actions>
+      <.button phx-disable-with="Sending...">Send Promo</.button>
+    </:actions>
+  </.simple_form>
+</div>
