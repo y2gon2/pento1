@@ -56,6 +56,14 @@ defmodule Pento1.Survey do
   end
 
   @doc """
+  get 1 record matching user_id
+  """
+  def get_demographic_by_user(user) do
+    Demographic.Query.for_user(user)
+    |> Repo.one()
+  end
+
+  @doc """
   Updates a demographic.
 
   ## Examples
