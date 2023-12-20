@@ -1,0 +1,29 @@
+<div>
+  <.simple_form 
+    for={@form}
+
+    phx-submit="save"
+    id={@id}
+    phx-target={@myself} 
+  >
+  <%!-- phx-target={@myself}  
+  해당 event 는 부모 component 로 전달되지 않고 현재 component 자체로 처리로 전달되도록 --%>
+    <.input 
+      field={@form[:gender]}
+      type="select"
+      label="Gender"
+      options={["female", "male", "other", "prefer not to say"]}
+    />
+    <.input
+      field={@form[:year_of_birth]}
+      type="select"
+      label="Year of Birth"
+      options={Enum.reverse(1920..2023)}
+    />
+    <:actions>
+      <.button phx-disable-with="Saving...">Save</.button>
+    </:actions>
+  </.simple_form>
+</div>
+
+

@@ -1,5 +1,4 @@
 defmodule Pento1Web.Router do
-  alias Pento1.Survey
   use Pento1Web, :router
 
   import Pento1Web.UserAuth

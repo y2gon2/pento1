@@ -3,8 +3,13 @@
 </Component.hero>
 <%= if @demographic do %>
   <DemographicLive.Show.details demographic={@demographic}/>
+  <hr />
+  <br/>
 <% else %>
-  <h2>Demographic From coming soon!</h2>
+  <.live_component module={DemographicLive.Form}
+    id="demographic-form"
+    current_user={@current_user}
+  />
 <% end %>
 
 <%!-- 
