@@ -319,6 +319,22 @@ defmodule Pento1Web.CoreComponents do
     """
   end
 
+  # custom input for appliation
+  def input(%{type: "rating"} = assigns) do
+    ~H"""
+      <select
+        id={@id}
+        name={@name}
+        class="border focus:ring-zinc-500"
+        multiple={@multiple}
+        {@rest}
+      >
+      <option :if={@prompt} value=""><%= @prompt %></option>
+        <%= Phoenix.HTML.Form.options_for_select(@options, @value) %>
+      </select>
+    """
+  end
+
   def input(%{type: "select"} = assigns) do
     ~H"""
     <div phx-feedback-for={@name}>

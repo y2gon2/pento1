@@ -2,16 +2,29 @@ defmodule Pento1Web.SurveyLive do
   use Pento1Web, :live_view
 
   alias Pento1Web.SurveyLive.Component
-  alias Pento1.{Survey}
+  alias Pento1.{Survey, Catalog}
   alias Pento1Web.DemographicLive
+  alias Pento1Web.RatingLive
 
   def mount(_params, _session, socket) do
     IO.inspect(socket, label: "socket : ")
     {:ok,
-    socket |> assign_demographic
+    socket
+    |> assign_demographic
+    |> assign_products
     }
   end
 
+  # --------- product & rating 관련 처리 함수 ----------------
+  def assign_products(%{assigns: %{current_user: current_user}}=socket) do
+    assign(socket, :products, list_products(current_user))
+  end
+
+  defp list_products(user) do
+    Catalog.list_products_with_user_rating(user)
+  end
+
+  # ----------- demographic 관련 처리 함수 --------------------
   # To teach the SurveyLive view how to respond to our message
   # handle_info/2는 시스템 또는 백엔드 관련 이벤트를 처리하는 반면,
   # handle_event/3는 프론트엔드 사용자 인터페이스 이벤트를 처리하는 데 사용됨.
