@@ -21,6 +21,12 @@ defmodule Pento1.Catalog do
     Repo.all(Product)
   end
 
+  def products_with_average_rating do
+    Product.Query.with_average_ratings() |> Repo.all()
+  end
+
+  @spec list_products_with_user_rating(atom() | %{:id => any(), optional(any()) => any()}) ::
+          any()
   def list_products_with_user_rating(user) do
     Product.Query.with_user_ratings(user)
     |> Repo.all()
