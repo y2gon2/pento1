@@ -31,8 +31,19 @@ defmodule Pento1Web.PromoLive do
   end
 
   def handle_event("save", %{"recipient" => recipient_params}, socket) do
-    :timer.sleep(1000)
-
+    case Promo.send_promo(socket.assigns.recipient, recipient_params) do
+      {:ok, _recipient} ->
+        {:noreply,
+          socket
+          |> put_flash(:info, "Sent promo!")
+          |> clear_form()}
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {
+          :noreply,
+          socket
+          |> put_flash(:error, "Failed to send promo")
+          |> assign_form(changeset)}
+    end
   end
 
   def assign_recipient(socket) do

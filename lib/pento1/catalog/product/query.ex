@@ -5,6 +5,7 @@ defmodule Pento1.Catalog.Product.Query do
   alias Pento1.Survey.{Rating, Demographic}
   alias Pento1.Accounts.User
 
+  # base table (Product) 에 대한 alias 는 자동을 p 로 할당 되는 듯??
   def base, do: Product
 
   @doc """
@@ -22,6 +23,8 @@ defmodule Pento1.Catalog.Product.Query do
     query
     |> preload(ratings:  ^ratings_query)
   end
+
+  # -----------------------------------------------------------------------
 
   @doc """
   admin - dashboard 에 각 상품의 평균 rating 을 산출하기 위함
@@ -77,5 +80,79 @@ defmodule Pento1.Catalog.Product.Query do
     # fragment() - 일반적으로 정형화된 query 가 아닌, 사용자가 직접 database 문법을 사용하여 logic 을 구성할 경우 사용
     # "?::float" - SQL(postgres)에서 타입 캐스팅(type casting). 부동 소수점 type(float) 으로 변환
     # avg(r.stars) - 평점의 평균값을 계산. 그 결과 값은 앞에서 언급한 float type 으로 계산됨.
+  end
+
+  def with_zero_ratings(query \\ base()) do
+    query
+    |> select([p], {p.name, 0})
+  end
+
+  # -----------------------------------------------------------------------
+  # 아래 함수드릉 admin view 에서 filtering 조건에 따라 가져오는 값을 해당 filter 에 맞게
+  # 정리하여 받기 위한 함수들
+
+  def join_users(query \\ base()) do
+    query
+    |> join(:left, [p, r], u in User, on: r.user_id == u.id)
+    # 왼쪽 table (p Product) 의 모든 record 에 조건이 만족되는 오른쪽 table record (u User) 를 join
+    # 만약 해당하는 오른쪽 table record 가 없으면 null 로 처리
+    # ?? 왼쪽 table 은 p? r?
+    # -> 여기에서 두번째 [p, r] 은 이미 이전 단계의 query 문 언급한 alias 를 모두 그대로 가져온다.
+    #    즉 r record 에 일치하는 user_id 를 가진 u record 를 이전 작업된 결과 query 문 (p base) 에 join 하는 것
+  end
+
+  def join_demographics(query \\ base()) do
+    query
+    |> join(:left, [p, r, u, d], d in Demographic, on: d.user_id == u.id)
+    # 위와 마찬가지로 `[p, r, u, d]` 에서 p, r 은 이전 query 작업 내용을 담고(?) 있으며
+    # 여기서는 d(demographic record) 의 user_id 가 일치하는 u record 를 이전 query 결과 (p base)에 join 한다.
+  end
+
+  def filter_by_age_group(query \\ base(), filter) do
+    query
+    |> apply_age_group_filter(filter)
+  end
+
+  defp apply_age_group_filter(query, "18 and under") do
+    birth_year = DateTime.utc_now().year - 18
+
+    query
+    |> where([p, r, u, d], d.year_of_birth >= ^birth_year)
+  end
+
+  defp apply_age_group_filter(query, "18 to 25") do
+    birth_year_max = DateTime.utc_now().year - 18
+    birth_year_min = DateTime.utc_now().year - 25
+
+    query
+    |> where(
+      [p, r, u, d],
+      d.year_of_birth >= ^birth_year_min and d.year_of_birth <= ^birth_year_max
+    )
+  end
+
+  defp apply_age_group_filter(query, "25 to 35") do
+    birth_year_max = DateTime.utc_now().year - 25
+    birth_year_min = DateTime.utc_now().year - 35
+
+    query
+    |> where(
+      [p, r, u, d],
+      d.year_of_birth >= ^birth_year_min and d.year_of_birth <= ^birth_year_max
+    )
+  end
+
+  defp apply_age_group_filter(query, "35 and up") do
+    birth_year = DateTime.utc_now().year - 35
+
+    query
+    |> where(
+      [p, r, u, d],
+      d.year_of_birth <= ^birth_year
+    )
+  end
+
+  defp apply_age_group_filter(query, _filter) do
+    query
   end
 end

@@ -15,19 +15,44 @@ defmodule Pento1Web.SurveyLive do
     }
   end
 
-  # --------- product & rating 관련 처리 함수 ----------------
-  def assign_products(%{assigns: %{current_user: current_user}}=socket) do
-    assign(socket, :products, list_products(current_user))
-  end
+  # product & rating 관련 처리 함수
 
-  defp list_products(user) do
-    Catalog.list_products_with_user_rating(user)
-  end
-
+  # Elixir에서 같은 이름과 인자 개수(arity)를 가진 함수 정의를 연속적으로 배치하는 것은
+  # 컴파일러의 요구 사항이며, 단순한 가독성 문제 이상의 중요한 의미를 가진다.
+  #
+  # 1. 함수 패턴 매칭의 일관성:
+  # Elixir는 함수 호출 시 패턴 매칭을 사용하여 적절한 함수 정의를 찾음.
+  # 같은 이름과 arity를 가진 함수 정의들이 분산되어 있다면, 패턴 매칭 과정이
+  # 예측하기 어려워질 수 있음에 따라, 연속적으로 배치함으로써, 컴파일러는 함수의
+  # 모든 정의를 올바른 순서대로 확인하고, 호출 시 적절한 정의를 효율적으로 선택 가능해짐
+  #
+  # 2. 코드의 명확성과 유지 관리:
+  # 같은 함수의 다양한 정의들이 연속적으로 나열되어 있으면, 개발자는 해당 함수의
+  # 모든 동작을 더 쉽게 파악하여 유지 관리와 디버깅을 쉽게 하며, 코드의 가독성을 높임.
+  #
+  # 결론적으로, 이 규칙은 컴파일 시스템의 요구 사항이자 Elixir 언어의 패턴 매칭
+  # 메커니즘과 관련된 중요한 부분으로 따르지 않으면, 프로그램이 예상대로 작동하지
+  # 않을 수 있으며, 컴파일 오류가 발생할 수 있다.
   def handle_info({:created_rating, updated_product, product_index}, socket) do
     {:noreply, handle_rating_created(socket, updated_product, product_index)}
   end
 
+  def handle_info({:created_demographic, demographic}, socket) do
+    {:noreply, handle_demographic_created(socket, demographic)}
+  end
+
+  # product & rating 관련 처리 함수
+  def assign_products(%{assigns: %{current_user: current_user}}=socket) do
+    assign(socket, :products, list_products(current_user))
+  end
+
+  # demographic 관련 처리 함수
+  defp list_products(user) do
+    Catalog.list_products_with_user_rating(user)
+  end
+
+
+  @spec handle_rating_created(Phoenix.LiveView.Socket.t(), any(), integer()) :: map()
   def handle_rating_created(
     %{assigns: %{products: products}} = socket,
     updated_product,
@@ -49,9 +74,6 @@ defmodule Pento1Web.SurveyLive do
   # 해당 project 에서는 handle_event 자체는 자식 component 에서 처리되지만
   # 부모 view 내에서 assgin 정보를 받아서 update 하고, 이에 따라, 등록된 demographic 정보를
   # 보여주는 다른 자식 component 로 전환해 주어야 하므로, 이 작업을 위해 사용됨.
-  def handle_info({:created_demographic, demographic}, socket) do
-    {:noreply, handle_demographic_created(socket, demographic)}
-  end
 
   def handle_demographic_created(socket, demographic) do
     socket

@@ -7,6 +7,7 @@ defmodule Pento1Web.Admin.SurveyResultsLive do
     {:ok,
       socket
       |> assign(assigns)
+      |> assign_age_group_filter()
       |> assign_products_with_average_ratings()
       |> assign_dataset()
       |> assign_chart()  # ex. column_map: %{category_col: 0, value_cols: [1]}
@@ -14,13 +15,50 @@ defmodule Pento1Web.Admin.SurveyResultsLive do
     }
   end
 
-  # ----------------------------------------------------------------------
-  def assign_products_with_average_ratings(socket) do
+  def handle_event(
+    "age_group_filter",
+    %{"age_group_filter" => age_group_filter},
     socket
-    |> assign(
-      :products_with_average_ratings,
-      Catalog.products_with_average_rating()
-    )
+  ) do
+    {
+      :noreply,
+      socket
+      |> assign_age_group_filter(age_group_filter)
+      |> assign_products_with_average_ratings()
+      |> assign_dataset()
+      |> assign_chart()
+      |> assign_chart_svg()
+    }
+  end
+
+  # ----------------------------------------------------------------------
+  # 나이 filter assgin 할당 구현
+  def assign_age_group_filter(socket) do
+    assign(socket, :age_group_filter, "all")
+  end
+
+  def assign_age_group_filter(socket, age_group_filter) do
+    assign(socket, :age_group_filter, age_group_filter)
+  end
+
+  # ----------------------------------------------------------------------
+  defp assign_products_with_average_ratings(
+    %{assigns: %{age_group_filter: age_group_filter}} = socket
+    ) do
+      assign(
+        socket,
+        :products_with_average_ratings,
+        get_products_with_average_ratings(%{age_group_filter: age_group_filter})
+      )
+  end
+
+  defp get_products_with_average_ratings(filter) do
+    case Catalog.products_with_average_ratings(filter) do
+      [] ->
+        Catalog.products_with_zero_ratings()
+      products ->
+        products
+    end
   end
 
   # ----------------------------------------------------------------------
@@ -39,8 +77,7 @@ defmodule Pento1Web.Admin.SurveyResultsLive do
   # ----------------------------------------------------------------------
   # bar chart 설정값을  socket state 추가 reducer function
   defp assign_chart(%{assigns: %{dataset: dataset}} = socket) do
-    socket
-    |> assign(:chart, make_bar_chart(dataset))
+    assign(socket, :chart, make_bar_chart(dataset))
   end
 
   # bar chart 설정
