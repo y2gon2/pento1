@@ -1,7 +1,8 @@
 defmodule Pento1Web.Admin.SurveyResultsLive do
   use Pento1Web, :live_component
+  use Pento1Web, :chart_live
+
   alias Pento1.Catalog
-  alias Contex.Plot
 
   def update(assigns, socket) do
     {:ok,
@@ -70,9 +71,10 @@ defmodule Pento1Web.Admin.SurveyResultsLive do
     |> assign(:dataset, make_bar_chart_dataset(products_with_average_ratings))
   end
 
-  defp make_bar_chart_dataset(data) do
-    Contex.Dataset.new(data)
-  end
+  # -> macro 사용으로 bar_chart.ex 내 함수 inject 하는 것으로 변경
+  # defp make_bar_chart_dataset(data) do
+  #   Contex.Dataset.new(data)
+  # end
 
   # ----------------------------------------------------------------------
   # bar chart 설정값을  socket state 추가 reducer function
@@ -80,25 +82,31 @@ defmodule Pento1Web.Admin.SurveyResultsLive do
     assign(socket, :chart, make_bar_chart(dataset))
   end
 
+    # -> macro 사용으로 bar_chart.ex 내 함수 inject 하는 것으로 변경
   # bar chart 설정
-  defp make_bar_chart(dataset) do
-    Contex.BarChart.new(dataset)
-  end
+  # defp make_bar_chart(dataset) do
+  #   Contex.BarChart.new(dataset)
+  # end
 
   # ----------------------------------------------------------------------
   # plot 설정값 assign state 추가
   defp assign_chart_svg(%{assigns: %{chart: chart}} = socket) do
     socket
-    |> assign(:chart_svg, render_bar_chart(chart))
+    # |> assign(:chart_svg, render_bar_chart(chart)) # macro 사용으로 인한 변경
+    |> assign(
+      :chart_svg,
+      render_bar_chart(chart, title(), subtitle(), x_axis(), y_axis())
+    )
   end
 
+  # -> macro 사용으로 bar_chart.ex 내 함수 inject 하는 것으로 변경
   # Polt 값 설정
-  defp render_bar_chart(chart) do
-    Plot.new(500, 400, chart)
-    |> Plot.titles(title(), subtitle())
-    |> Plot.axis_labels(x_asis(), y_axis())
-    |> Plot.to_svg()
-  end
+  # defp render_bar_chart(chart) do
+  #   Plot.new(500, 400, chart)
+  #   |> Plot.titles(title(), subtitle())
+  #   |> Plot.axis_labels(x_asis(), y_axis())
+  #   |> Plot.to_svg()
+  # end
 
   defp title do
     "Product Ratings"
@@ -108,7 +116,7 @@ defmodule Pento1Web.Admin.SurveyResultsLive do
     "average star ratings per product"
   end
 
-  defp x_asis do
+  defp x_axis do
     "products"
   end
 
