@@ -33,7 +33,19 @@ defmodule Pento1Web.Admin.SurveyResultsLive do
   end
 
   # ----------------------------------------------------------------------
-  # 나이 filter assgin 할당 구현
+  # ch09
+  # subscribe 를 통해 변경된 상태임을 확인하고 component update 를 진행할 때,
+  # 초기 상태 filter 조건인 "all" 로 처리하게 된다. 이는 admin 사용자가 설정한
+  # filtering 조건이 매번 자동으로 "all" 로 변경됨을 의미한다.
+  # 이를 해결하기 위해 기존 설정값을 그대로 유지하면서 update 를 진행할 수 있도록
+  # 이를 재할당해주는 함수를 재 구현 해줌.
+  def assign_age_group_filter(
+    %{assigns: %{age_group_fliter: age_group_filter} = socket}
+   ) do
+      assign(socket, :age_group_filter, age_group_filter)
+  end
+
+  # ch08 나이 filter assgin 할당 구현
   def assign_age_group_filter(socket) do
     assign(socket, :age_group_filter, "all")
   end

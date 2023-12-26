@@ -3,15 +3,16 @@ defmodule Pento1Web.SurveyLive do
 
   alias Pento1Web.SurveyLive.Component
   alias Pento1.{Survey, Catalog}
-  alias Pento1Web.DemographicLive
-  alias Pento1Web.RatingLive
+  alias Pento1Web.{DemographicLive, RatingLive, Endpoint}
+
+  @survey_results_topic "survey_results"
 
   def mount(_params, _session, socket) do
     IO.inspect(socket, label: "socket : ")
     {:ok,
     socket
-    |> assign_demographic
-    |> assign_products
+    |> assign_demographic()
+    |> assign_products()
     }
   end
 
@@ -42,28 +43,13 @@ defmodule Pento1Web.SurveyLive do
   end
 
   # product & rating 관련 처리 함수
-  def assign_products(%{assigns: %{current_user: current_user}}=socket) do
+  def assign_products(%{assigns: %{current_user: current_user}} = socket) do
     assign(socket, :products, list_products(current_user))
   end
 
   # demographic 관련 처리 함수
   defp list_products(user) do
     Catalog.list_products_with_user_rating(user)
-  end
-
-
-  @spec handle_rating_created(Phoenix.LiveView.Socket.t(), any(), integer()) :: map()
-  def handle_rating_created(
-    %{assigns: %{products: products}} = socket,
-    updated_product,
-    product_index
-  ) do
-    socket
-    |> put_flash(:info, "Rating submitted successfully")
-    |> assign(
-      :products,
-      List.replace_at(products, product_index, updated_product)
-    )
   end
 
   # ----------- demographic 관련 처리 함수 --------------------
@@ -88,4 +74,26 @@ defmodule Pento1Web.SurveyLive do
       Survey.get_demographic_by_user(current_user)
     )
   end
+
+  # ----------------- ch09 Distributed Dashboard ---------------
+  defp handle_rating_created(
+    %{assigns: %{products: products}} = socket,
+    updated_product,
+    product_index
+  ) do
+    # 기존 handle_rating_created 함수에 추가
+    Endpoint.broadcast(@survey_results_topic, "rating_created", %{}) # dashboard 에서 subscribe 할 broadcast
+
+    socket
+    |> put_flash(:info, "Rating submitted successfully")
+    |> assign(
+      :products,
+      List.replace_at(products, product_index, updated_product)
+    )
+
+    # Flash Message 는 웹 애플리케이션에서 사용자에게 특정 작업의 결과를 임시적으로 보여주는 짧은 메세지.
+    # 예를 들어, 사용자가 양식을 제출하고 성공적으로 처리되었을 때 "저장되었습니다"나 오류가 발생했을 때
+    # "오류가 발생했습니다"와 같은 메시지가 플래시 메시지에 해당
+   end
+
 end
