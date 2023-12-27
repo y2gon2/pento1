@@ -2,6 +2,7 @@ defmodule Pento1Web.ProductLive.Show do
   use Pento1Web, :live_view
 
   alias Pento1.Catalog
+  alias Pento1Web.Presence
 
   @impl true
   def mount(_params, _session, socket) do
@@ -10,10 +11,23 @@ defmodule Pento1Web.ProductLive.Show do
 
   @impl true
   def handle_params(%{"id" => id}, _, socket) do
+    product = Catalog.get_product!(id)
+    maybe_track_user(product, socket)
+
     {:noreply,
      socket
      |> assign(:page_title, page_title(socket.assigns.live_action))
-     |> assign(:product, Catalog.get_product!(id))}
+     |> assign(:product, product)}
+  end
+
+  def mayby_track_user(_product, _socket), do: nil
+  def maybe_track_user(
+    product,
+    %{assigns: %{live_action: :show, current_user: current_user}} = socket
+  ) do
+    if connected?(socket) do
+      Presence.track_user(self(), product, current_user.email)
+    end
   end
 
   defp page_title(:show), do: "Show Product"
