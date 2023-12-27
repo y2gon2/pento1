@@ -1,10 +1,11 @@
 defmodule Pento1Web.Admin.DashboardLive do
-  alias Pento1Web.Admin.SurveyResultsLive
+  alias Pento1Web.Admin.{SurveyResultsLive, UserActivityLive}
   use Pento1Web, :live_view
 
   alias Pento1Web.Endpoint
 
   @survey_results_topic "survey_results"
+  @user_activity_topic "user_activity"
 
   # mount/3 는 2번 call 됨
   # 1. 최초 mount & HTML 응답으로 정적 rendering 시
@@ -33,11 +34,14 @@ defmodule Pento1Web.Admin.DashboardLive do
     if connected?(socket) do
       Endpoint.subscribe(@survey_results_topic)
       # 첫 번째 호출(정적 HTML 렌더링)에서는 실시간 통신이 필요 없으므로 구독을 하지 않음.
+
+      Endpoint.subscribe(@user_activity_topic)
     end
 
     {:ok,
     socket
     |> assign(:survey_results_component_id ,"survey-results")
+    |> assign(:user_activity_component_id, "user-activity")
     }
   end
 
@@ -53,4 +57,47 @@ defmodule Pento1Web.Admin.DashboardLive do
 
     {:noreply, socket}
   end
+
+  def handle_info(%{event: "presence_diff"}, socket) do
+    send_update(
+      UserActivityLive,
+      id: socket.assigns.user_activity_component_id
+    )
+
+    {:noreply, socket}
+  end
 end
+
+# defmodule Pento1Web.Admin.DashboardLive do
+#   use Pento1Web, :live_view
+#   alias Pento1Web.Admin.{SurveyResultsLive, UserActivityLive}
+#   alias Pento1Web.Endpoint
+#   @survey_results_topic "survey_results"
+#   @user_activity_topic "user_activity"
+
+#   def mount(_params, _session, socket) do
+#     if connected?(socket) do
+#       Endpoint.subscribe(@survey_results_topic)
+#       Endpoint.subscribe(@user_activity_topic)
+#     end
+
+#     {:ok,
+#      socket
+#      |> assign(:survey_results_component_id, "survey-results")
+#      |> assign(:user_activity_component_id, "user-activity")}
+#   end
+
+#   def handle_info(%{event: "rating_created"}, socket) do
+#     send_update(
+#       SurveyResultsLive,
+#       id: socket.assigns.survey_results_component_id)
+#     {:noreply, socket}
+#   end
+
+#   def handle_info(%{event: "presence_diff"}, socket) do
+#     send_update(
+#       UserActivityLive,
+#       id: socket.assigns.user_activity_component_id)
+#     {:noreply, socket}
+#   end
+# end

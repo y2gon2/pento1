@@ -20,16 +20,17 @@ defmodule Pento1Web.ProductLive.Show do
      |> assign(:product, product)}
   end
 
-  def mayby_track_user(_product, _socket), do: nil
   def maybe_track_user(
     product,
     %{assigns: %{live_action: :show, current_user: current_user}} = socket
   ) do
+    IO.inspect(self(), label: "self()111")
     if connected?(socket) do
       Presence.track_user(self(), product, current_user.email)
     end
   end
+  def maybe_track_user(_product, _socket), do: nil
 
   defp page_title(:show), do: "Show Product"
-  defp page_title(:edit), do: "Edit Product"
+  # defp page_title(:edit), do: "Edit Product"
 end
