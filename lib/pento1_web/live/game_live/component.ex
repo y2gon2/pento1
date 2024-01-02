@@ -1,7 +1,7 @@
 defmodule Pento1Web.GameLive.Component do
   use Phoenix.Component
   alias Pento1.Game.Pentomino
-  # import Pento1Web.GameLive.Colors
+  import Pento1Web.GameLive.Colors
 
   @width 10
 
@@ -50,4 +50,52 @@ defmodule Pento1Web.GameLive.Component do
     """
   end
 
+  # 퍼즐 조각의 형태, 색 의 값을 받아 rendering
+  attr :points, :list, required: true
+  attr :name, :string, required: true
+  attr :fill, :string, required: true
+  def shape(assigns) do
+    ~H"""
+    <%= for {x, y} <- @points do %>
+      <.point x={x} y={y} fill={@fill} name={@name} />
+    <% end %>
+    """
+  end
+
+  attr :shape_names, :list, required: true
+  attr :completed_shape_names, :list, default: []
+  def palette(assigns) do
+    ~H"""
+    <div id="palette">
+      <.canvas view_box="0 0 500 125">
+        <%= for shape <- palette_shapes(@shape_names) do %>
+          <.shape
+            points={ shape.points }
+            fill={ color(shape.color, false, shape.name in @completed_shape_names) }
+            name={ shape.name }
+          />
+        <% end %>
+      </.canvas>
+    </div>
+    """
+  end
+
+# --- 모든 모양의 조각을 2 * 6 배열로 배치하기 위한 내부 함수들 ---
+  defp palette_shapes(names) do
+    names
+    |> Enum.with_index()
+    |> Enum.map(&place_pento/1)
+  end
+
+  defp place_pento({name, i}) do
+    Pentomino.new(name: name, location: location(i))
+    |> Pentomino.to_shape()
+  end
+
+  defp location(i) do
+    x = rem(i, 6) * 4 + 3
+    y = div(i, 6) * 5 + 3
+    {x, y}
+  end
+  # -----------------------------------------------------------
 end
