@@ -2,14 +2,22 @@ defmodule Pento1Web.GameLive do
   use Pento1Web, :live_view
 
   import Pento1Web.GameLive.Component
+  alias Pento1Web.GameLive.Board
 
-  def mount(_params, _session, socket), do: {:ok, socket}
+
+  def mount(%{"puzzle" => puzzle}, _session, socket) do
+    {:ok, assign(socket, puzzle: puzzle)}
+  end
 
   def render(assigns) do
     ~H"""
       <section class="container">
         <h1 class="font-heavy text-3xl">Welcome to Pento!</h1>
-        <.palette shape_names={[:i, :l, :y, :n, :p, :w, :u, :v, :s, :f, :x, :t]}/>
+        <.live_component module={Board} puzzle={@puzzle} id="game" />
+
+        <%!-- <.palette shape_names={[:i, :l, :y, :n, :p, :w, :u, :v, :s, :f, :x, :t]}/> --%>
+
+
         <%!-- <.canvas view_box="0 0 220 70">
           <.shape
             points={ [{3, 2}, {4, 3}, {3, 3}, {4, 2}, {3, 4}] }
@@ -42,8 +50,6 @@ defmodule Pento1Web.GameLive do
         <use xlink:href="#point" x="0" y="10" fill="red" />
         <use xlink:href="#point" x="10" y="5" fill="black" />
       </svg> --%>
-
     """
-
   end
 end
