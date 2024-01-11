@@ -9,7 +9,8 @@
 defmodule Pento1Web.GameLive.Board do
   use Pento1Web, :live_component
 
-  alias Pento1.Game.{Board, Pentomino}
+  alias Pento1.Game
+  alias Pento1.Game.Board
   import Pento1Web.GameLive.{Colors, Component}
 
 
@@ -27,24 +28,13 @@ defmodule Pento1Web.GameLive.Board do
   end
 
   def assign_board(%{assigns: %{puzzle: puzzle}} = socket) do
-    active = Pentomino.new(name: :p, location: {7, 2})
-    completed = [
-        Pentomino.new(name: :u, rotation: 270, location: {1, 2}),
-        Pentomino.new(name: :v, rotation: 90, location: {4, 2})
-      ]
-    _puzzles = Board.puzzles() # atom must exist!
-
     board =
       puzzle
       |> String.to_existing_atom
       |> Board.new
-      |> Map.put(:completed_pentos, completed)
-      |> Map.put(:active_pento, active)
 
     assign(socket, board: board)
   end
-
-
 
   def assign_shapes(%{assigns: %{board: board}} = socket) do
     shapes = Board.to_shapes(board)
@@ -69,5 +59,45 @@ defmodule Pento1Web.GameLive.Board do
           {Enum.map(@board.completed_pentos, & &1.name)} />
     </div>
     """
+  end
+
+  def handle_event("pick", %{"name" => name}, socket) do
+    {:noreply, socket |> pick(name) |> assign_shapes}
+  end
+
+  def handle_event("key", %{"key" => key}, socket) do
+    {:noreply, socket |> do_key(key) |> assign_shapes}
+  end
+
+  def do_key(socket, key) do
+    case key do
+      "ArrowLeft" -> move(socket, :left)
+      "ArrowRight" -> move(socket, :right)
+      "ArrowUp" -> move(socket, :up)
+      "ArrowDown" -> move(socket, :down)
+      "Shift" -> move(socket, :rotate)
+      "Enter" -> move(socket, :flip)
+      "Space" -> drop(socket)
+      _ -> socket
+    end
+  end
+
+  def move(socket, move) do
+    case Game.maybe_move(socket.assigns.board, move) do
+      {:error, message} -> put_flash(socket, :info, message)
+      {:ok, board} -> socket |> assign(board: board) |> assign_shapes
+    end
+  end
+
+  def drop(socket) do
+    case Game.maybe_drop(socket.assigns.board) do
+      {:error, message} -> put_flash(socket, :info, message)
+      {:ok, board} -> socket |> assign(board: board) |> assign_shapes()
+    end
+  end
+
+  def pick(socket, name) do
+    shape_name = String.to_existing_atom(name)
+    update(socket, :board, &Board.pick(&1, shape_name))
   end
 end
