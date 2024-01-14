@@ -1,4 +1,5 @@
 defmodule Pento1Web.Router do
+  alias Pento1Web.GameLive
   use Pento1Web, :router
 
   import Pento1Web.UserAuth
@@ -73,6 +74,7 @@ defmodule Pento1Web.Router do
       live "/promo", PromoLive
       live "/survey", SurveyLive, :index
       live "/game/:puzzle", GameLive
+      live "/play", GameLive.Picker
 
       live "/products", ProductLive.Index, :index
       live "/products/new", ProductLive.Index, :new

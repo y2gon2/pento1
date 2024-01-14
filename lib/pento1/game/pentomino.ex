@@ -2,14 +2,11 @@ defmodule Pento1.Game.Pentomino do
   alias Pento1.Game.Shape
   alias Pento1.Game.Point
 
-  @names [:i, :l, :y, :n, :p, :w, :u, :v, :s, :f, :x, :t]
-  @default_location {8, 8}
-
   defstruct [
     name: :i,
     rotation: 0,
     reflected: false,
-    location: @default_location
+    location: {1, 1}
   ]
 
   def new(field \\ []), do: __struct__(field)

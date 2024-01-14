@@ -8,17 +8,24 @@ defmodule Pento1.Game.Board do
     points: []
   ]
 
-  def puzzles(), do: ~w[default wid widest medium tiny]a  # atom list 생성
+  def puzzles(), do: ~w[tiny small ball donut default wide widest medium]a  # atom list 생성
 
-  def new(palette, points) do
-    %__MODULE__{palette: palette(palette), points: points}
+  def new(palette, points, hole \\ []) do
+    %__MODULE__{palette: palette(palette), points: (points -- hole)}
   end
 
   def new(:tiny), do: new(:small, rect(5, 3))
-  def new(:widest), do: new(:all , rect(20, 3))
-  def new(:wide), do: new(:all , rect(15, 4))
-  def new(:medium), do: new(:all , rect(12, 5))
-  def new(:default), do: new(:all , rect(10, 6))
+  def new(:widest), do: new(:all, rect(20, 3))
+  def new(:wide), do: new(:all, rect(15, 4))
+  def new(:medium), do: new(:all, rect(12, 5))
+  def new(:default), do: new(:all, rect(10, 6))
+  def new(:small), do: new(:medium, rect(7, 5))
+  def new(:donut) do
+    new(:all, rect(8, 8), (for x <- 4..5, y <- 4..5, do: {x, y}))
+  end
+  def new(:ball) do
+    new(:all, rect(8, 8), (for x <- [1, 8], y <- [1, 8], do: {x, y}))
+  end
 
   def to_shape(board) do
     Shape.__struct__(color: :purple, name: :board, points: board.points)
@@ -90,7 +97,7 @@ defmodule Pento1.Game.Board do
   # board 화면 중에 신규로 선택된 조각이 오도록 위치값 설정
   defp midpoints(board) do
     {xs, ys} = Enum.unzip(board.points)
-    {midpoints(xs), midpoints(ys)}
+    {midpoint(xs), midpoints(ys)}
   end
   defp midpoint(i), do: round(Enum.max(i) / 2.0)
 
