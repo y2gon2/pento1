@@ -4,8 +4,9 @@ import Config
 config :pento1, Pento1.Repo,
   username: "postgres",
   password: "2025",
-  hostname: "localhost",
   database: "pento1_dev",
+  hostname: "192.168.1.18",
+  port: 5432,
   stacktrace: true,
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
